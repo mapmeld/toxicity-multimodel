@@ -28,7 +28,12 @@ with Google API client and good internet connection.
 `dehatebert.py` checks comments in batches of 8 against the English monolingual model from Hate-Alert. I've been running this as a
 CoLab notebook for the GPU.
 
+The `toxics` folder contains positives for toxic / hate speech. Some
+of these are false positives (interesting for research) or have a
+little profanity, but the majority are genuinely bad.
+
 ## Prep work
 
-- pip3 install simpletransformers
+- Register on https://developers.perspectiveapi.com
+- ```pip3 install simpletransformers``` for DeHateBERT
 - save a Google API key enabled for Perspective API to .env
