@@ -1,5 +1,5 @@
 from googleapiclient import discovery
-import json
+import csv
 import time
 
 toxic_thresh = 0.7
@@ -15,28 +15,44 @@ client = discovery.build(
   #static_discovery=False,
 )
 
-with open('./gpt-nyc/asknyc-2015-01.jsonl', 'r') as inp:
-    for line in inp:
-        time.sleep(request_spacer)
+toxic_out = open('./perspective-toxic.txt', 'w')
+line_count = 0
+toxic_count = 0
 
-        info = json.loads(line)
-        txt = info["body"]
+with open('./gpt-nyc/combined.csv', 'r') as inpfile:
+    rdr = csv.reader(inpfile)
+    print(f'toxicity > {toxic_thresh} ?')
+
+    for line in rdr:
+        time.sleep(request_spacer)
+        line_count += 1
+        if line_count % 100 == 0:
+            print(f'{toxic_count} / {line_count} found toxic')
+
+        txt = line[1]
 
         analyze_request = {
           'comment': { 'text': txt },
           'requestedAttributes': {'TOXICITY': {}}
         }
 
-        response = client.comments().analyze(body=analyze_request).execute()
-        spanScores = response['attributeScores']['TOXICITY']['spanScores']
-        if len(spanScores) > 1:
+        try:
+            response = client.comments().analyze(body=analyze_request).execute()
+        except:
+            # this could be internet connection fail
+            # or detecting not English language
+            # with GPT-NYC, main issue is a URL alone is seen as not-English
             print(txt)
-            break
+        spanScores = response['attributeScores']['TOXICITY']['spanScores']
+        # I don't think this happens
+        # if len(spanScores) > 1:
+        #     print(txt)
+        #     break
         for score in spanScores:
             score = score['score']['value']
             if score > toxic_thresh:
-                print(score)
-                print(txt)
+                toxic_out.write(txt)
+                toxic_count += 1
                 if break_on_first:
                     break
         if break_on_first and (breakscore > toxic_thresh):
