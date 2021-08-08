@@ -51,7 +51,7 @@ with open('./gpt-nyc/combined.csv', 'r') as inpfile:
         for score in spanScores:
             score = score['score']['value']
             if score > toxic_thresh:
-                toxic_out.write(txt)
+                toxic_out.write(">>>>" + txt + "\n")
                 toxic_count += 1
                 if break_on_first:
                     break
